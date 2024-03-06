@@ -46,6 +46,7 @@ class Course extends Tutor_Base {
 		add_action( 'add_meta_boxes', array( $this, 'register_meta_box' ) );
 		add_action( 'save_post_' . $this->course_post_type, array( $this, 'save_course_meta' ), 10, 2 );
 		add_action( 'wp_ajax_tutor_save_topic', array( $this, 'tutor_save_topic' ) );
+		add_action( 'wp_ajax_tutor_save_topic_required', array( $this, 'tutor_save_topic_required' ) );
 
 		/**
 		 * Add Column
@@ -636,7 +637,6 @@ class Course extends Tutor_Base {
 		);
 		$topic_id ? $post_arr['ID'] = $topic_id : 0;
 		$current_topic_id           = wp_insert_post( $post_arr );
-
 		ob_start();
 		include tutor()->path . 'views/metabox/course-contents.php';
 
@@ -646,6 +646,14 @@ class Course extends Tutor_Base {
 				'course_contents' => ob_get_clean(),
 			)
 		);
+	}
+
+	public function tutor_save_topic_required(){
+		$topic_required      = Input::post( 'tutor_topic_required' );
+		$topic_id            = Input::post( 'topic_id', 0, Input::TYPE_INT );
+		if($topic_id != 0)
+		update_post_meta( $topic_id ,'tutor_topic_required',$topic_required);
+
 	}
 
 	/**

@@ -116,4 +116,11 @@ if ( tutor()->lesson_post_type === $post->post_type ) {
 <?php
 do_action( 'tutor_' . $context . '/single/after/wrap' );
 
+tutor_load_template_from_custom_path(
+	tutor()->path . '/views/modal/required_popup.php',
+	array(
+		"course_id"=>$course_id
+	),
+	false
+);
 get_tutor_footer();

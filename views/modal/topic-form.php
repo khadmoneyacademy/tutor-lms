@@ -44,6 +44,12 @@
 						<div><?php esc_html_e( 'Add a summary of short text to prepare students for the activities for the topic. The text is shown on the course page beside the tooltip beside the topic name.', 'tutor' ); ?></div>
 					</div>
 				</div>
+				<div class="tutor-col-sm-4 tutor-col-md-4 tutor-mt-4 tutor-mb-4">
+					<label class="tutor-form-toggle tutor-nowrap-ellipsis">
+						<input type="checkbox" class="tutor-form-toggle-input" value="1" name="tutor_topic_required<?php echo esc_attr( $data['topic_id'] ); ?>" <?php checked( '1', get_post_meta($data['topic_id'],'tutor_topic_required',true) ); ?> />
+						<span class="tutor-form-toggle-control"></span> <?php esc_html_e( 'Topic Required', 'tutor' ); ?>
+					</label>
+				</div>
 			</div>
 
 			<div class="tutor-modal-footer">
@@ -51,10 +57,47 @@
 					<?php esc_html_e( 'Cancel', 'tutor' ); ?>
 				</button>
 
-				<button type="button" class="tutor-btn tutor-btn-primary <?php echo esc_attr( ! empty( $data['button_class'] ) ? $data['button_class'] : '' ); ?>" id="<?php echo esc_attr( ! empty( $data['button_id'] ) ? $data['button_id'] : '' ); ?>">
+				<button id="tutor_update_topic_<?php echo esc_attr( $data['topic_id'] ); ?>" type="button" class="tutor-btn tutor-btn-primary <?php echo esc_attr( ! empty( $data['button_class'] ) ? $data['button_class'] : '' ); ?>" id="<?php echo esc_attr( ! empty( $data['button_id'] ) ? $data['button_id'] : '' ); ?>">
 					<?php echo esc_attr( $data['button_text'] ); ?>
 				</button>
 			</div>
 		</div>
 	</div>
 </div>
+
+<script>
+	jQuery(document).ready(function($) {
+    // Your click event, assuming you have a button to trigger this
+    jQuery('#tutor_update_topic_<?php echo esc_attr( $data['topic_id'] ); ?>').on('click', function() {
+	
+        // Get the value of tutor_topic_required
+        var tutorTopicRequired = $('input[name="tutor_topic_required<?php echo esc_attr( $data['topic_id'] ); ?>"]').is(':checked') ? 1 : 0;
+		var topicid = <?php echo esc_attr( $data['topic_id'] ); ?>;
+
+		console.log(tutorTopicRequired);
+        // Prepare the data to be sent
+        var data = {
+            'action': 'tutor_save_topic_required',
+            'tutor_topic_required': tutorTopicRequired,
+			'topic_id': topicid,
+        };
+
+        // Make the AJAX request
+        $.ajax({
+            type: 'POST',
+            url: ajaxurl, // WordPress AJAX URL
+            data: data,
+            success: function(response) {
+                // Handle the response if needed
+                console.log(response);
+            },
+            error: function(error) {
+                // Handle errors if any
+                console.log(error);
+            }
+        });
+
+    });
+});
+
+</script>
