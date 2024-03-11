@@ -829,6 +829,25 @@ final class Tutor {
 			PRIMARY KEY (withdraw_id)
 		) $charset_collate;";
 
+		$withdraw_table = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}tutor_withdraws (
+			withdraw_id bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) DEFAULT NULL,
+			amount decimal(16,2) DEFAULT NULL,
+			method_data text DEFAULT NULL,
+			status varchar(50) DEFAULT NULL,
+			updated_at datetime DEFAULT NULL,
+			created_at datetime DEFAULT NULL,
+			PRIMARY KEY (withdraw_id)
+		) $charset_collate;";
+
+		$require_topic_table = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}tutor_require_topic (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) DEFAULT NULL,
+			cours_id bigint(20) DEFAULT NULL,
+			topic_id bigint(20) DEFAULT NULL,
+			PRIMARY KEY (id)
+		) $charset_collate;";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $quiz_attempts_sql );
 		dbDelta( $quiz_attempt_answers );
@@ -836,6 +855,7 @@ final class Tutor {
 		dbDelta( $tutor_quiz_question_answers );
 		dbDelta( $earning_table );
 		dbDelta( $withdraw_table );
+		dbDelta( $require_topic_table );
 	}
 
 	/**

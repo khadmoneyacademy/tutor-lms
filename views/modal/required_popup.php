@@ -7,25 +7,45 @@
  * 
  */
 
- function get_posts_by_meta_value_and_parent($meta_key, $meta_value, $parent_post_id) {
-    global $wpdb;
+use Tutor\Models\LessonModel;
+//LessonModel::mark_lesson_complete( $lesson_id );
 
-    $sql = "SELECT p.ID, p.post_title
-            FROM {$wpdb->posts} p
-            LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = %s
-            WHERE p.post_parent = %d
-            AND (pm.meta_value = %s OR (pm.meta_value IS NULL AND %s = '0'))";
-
-    $query = $wpdb->prepare($sql, $meta_key, $parent_post_id, $meta_value, $meta_value);
-    $results = $wpdb->get_results($query);
-    return $results;
-}
 
 
 
 
 $required_topics=get_posts_by_meta_value_and_parent('tutor_topic_required ','1',$data['course_id']);
 $not_required_topics=get_posts_by_meta_value_and_parent('tutor_topic_required ','0',$data['course_id']);
+
+
+
+if ($_POST['insert_required_topic'] === 'insert_required_topic') {
+    $topic_selected = array();
+    $topic_required = $_POST["topic_required"];
+    $user_id = get_current_user_id();
+
+    // Assuming $not_required_topics is an array of objects
+    $not_required_topics_array = array_map(function ($item) {
+        return $item->ID;
+    }, $not_required_topics);
+
+    foreach ($topic_required as $topic_id) {
+        array_push($topic_selected, $topic_id);
+        insert_tutor_require_topic_row($user_id, $data['course_id'], $topic_id);
+    }
+
+    $filtered_topics = array_diff($not_required_topics_array, $topic_selected);
+
+
+    foreach($filtered_topics as $topic_id_completed) {
+        $lessons=get_lesson_ids_by_parent_id($topic_id_completed);
+
+        foreach ($lessons as $lesson) {
+            LessonModel::mark_lesson_complete( $lesson );
+        }
+    }
+}
+
 
 ?>
 <style>
@@ -63,6 +83,7 @@ $not_required_topics=get_posts_by_meta_value_and_parent('tutor_topic_required ',
     color: #3498db;
 }
 </style>
+
 <div id="" class="tutor-modal tutor-course-required-topic">
     <div class="tutor-modal-overlay"></div>
     <div class="tutor-modal-window tutor-modal-window-xl">
@@ -71,8 +92,8 @@ $not_required_topics=get_posts_by_meta_value_and_parent('tutor_topic_required ',
                 <span class="tutor-icon-times" area-hidden="true"></span>
             </button>
             <div class="modal-header">
-                video <?php echo $data['course_id']; ?>
-				<?php var_dump($not_required_topics); ?>
+                 <?php //echo $data['course_id']; ?>
+				<?php //var_dump($not_required_topics); ?>
                 <div class="tutor-video-player">
                     <div class="tutor-video-player">
                         <input type="hidden" id="tutor_video_tracking_information"
@@ -101,13 +122,15 @@ $not_required_topics=get_posts_by_meta_value_and_parent('tutor_topic_required ',
 						?>
 					</div>
 					<h1 class="page-title">الدروس الاختيارية</h1>
-					<form class="optional-lessons-form">
+					<form class="optional-lessons-form" method="POST" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
+                        <input type="hidden" name="insert_required_topic" value="insert_required_topic"/>
 						<?php
 							foreach($not_required_topics as $not_required){
 								?>
-									<label for="adab">
-										<input type="checkbox" id="adab" name="optional-lesson" value="adab">
-										<?php echo $topic->post_title; ?>
+									<label for="<?php echo $not_required->ID; ?>">
+										<input type="checkbox" id="<?php echo $not_required->ID; ?>" 
+                                        name="topic_required[]" value="<?php echo $not_required->ID; ?>">
+										<?php echo $not_required->post_title; ?>
 									</label>
 								<?php
 							}
@@ -123,3 +146,4 @@ $not_required_topics=get_posts_by_meta_value_and_parent('tutor_topic_required ',
         </div>
     </div>
 </div>
+

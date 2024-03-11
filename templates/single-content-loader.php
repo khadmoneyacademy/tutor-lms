@@ -116,11 +116,83 @@ if ( tutor()->lesson_post_type === $post->post_type ) {
 <?php
 do_action( 'tutor_' . $context . '/single/after/wrap' );
 
-tutor_load_template_from_custom_path(
-	tutor()->path . '/views/modal/required_popup.php',
-	array(
-		"course_id"=>$course_id
-	),
-	false
-);
+function get_lesson_ids_by_parent_id($parent_id) {
+    global $wpdb;
+
+    // Define the custom query
+    $query = $wpdb->prepare(
+        "SELECT ID FROM {$wpdb->prefix}posts 
+        WHERE post_type = %s AND post_parent = %d",
+        'lesson',
+        $parent_id
+    );
+
+    // Execute the query
+    $results = $wpdb->get_col($query);
+
+    // Return the IDs
+    return $results;
+}
+
+ function get_posts_by_meta_value_and_parent($meta_key, $meta_value, $parent_post_id) {
+    global $wpdb;
+
+    $sql = "SELECT p.ID, p.post_title
+            FROM {$wpdb->posts} p
+            LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = %s
+            WHERE p.post_parent = %d
+            AND (pm.meta_value = %s OR (pm.meta_value IS NULL AND %s = '0'))";
+
+    $query = $wpdb->prepare($sql, $meta_key, $parent_post_id, $meta_value, $meta_value);
+    $results = $wpdb->get_results($query);
+    return $results;
+}
+
+// Function to insert a new row into the tutor_require_topic table
+function insert_tutor_require_topic_row($user_id, $cours_id, $topic_id) {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'tutor_require_topic';
+
+    $wpdb->insert(
+        $table_name,
+        array(
+            'user_id'  => $user_id,
+            'cours_id' => $cours_id,
+            'topic_id' => $topic_id,
+        ),
+        array('%d', '%d', '%d')
+    );
+
+    // Return the ID of the inserted row
+    return $wpdb->insert_id;
+}
+
+// Function to get all rows based on cours_id and user_id
+function get_tutor_require_topic_rows($user_id, $cours_id) {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'tutor_require_topic';
+
+    $query = $wpdb->prepare(
+        "SELECT * FROM $table_name WHERE user_id = %d AND cours_id = %d",
+        $user_id,
+        $cours_id
+    );
+
+    // Retrieve the results as an associative array
+    $results = $wpdb->get_results($query, ARRAY_A);
+
+    return $results;
+}
+$have_topic_saved=get_tutor_require_topic_rows(get_current_user_id(),$course_id);
+ if(!$have_topic_saved) {
+		tutor_load_template_from_custom_path(
+			tutor()->path . '/views/modal/required_popup.php',
+			array(
+				"course_id"=>$course_id
+			),
+			true
+		);
+ }
 get_tutor_footer();
