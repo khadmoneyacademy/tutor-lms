@@ -20,6 +20,7 @@ $not_required_topics=get_posts_by_meta_value_and_parent('tutor_topic_required ',
 
 
 if ($_POST['insert_required_topic'] === 'insert_required_topic') {
+
     $topic_selected = array();
     $topic_required = $_POST["topic_required"];
     $user_id = get_current_user_id();
@@ -44,8 +45,9 @@ if ($_POST['insert_required_topic'] === 'insert_required_topic') {
             LessonModel::mark_lesson_complete( $lesson );
         }
     }
+    var_dump($_POST);
 }
-
+else {
 
 ?>
 <style>
@@ -122,7 +124,7 @@ if ($_POST['insert_required_topic'] === 'insert_required_topic') {
 						?>
 					</div>
 					<h1 class="page-title">الدروس الاختيارية</h1>
-					<form class="optional-lessons-form" method="POST" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
+					<form class="optional-lessons-form" method="POST" action="" onsubmit="refreshPage()">
                         <input type="hidden" name="insert_required_topic" value="insert_required_topic"/>
 						<?php
 							foreach($not_required_topics as $not_required){
@@ -147,3 +149,9 @@ if ($_POST['insert_required_topic'] === 'insert_required_topic') {
     </div>
 </div>
 
+<script>
+    function refreshPage() {
+        window.location.reload();
+    }
+</script>
+<?php }

@@ -186,13 +186,14 @@ function get_tutor_require_topic_rows($user_id, $cours_id) {
     return $results;
 }
 $have_topic_saved=get_tutor_require_topic_rows(get_current_user_id(),$course_id);
- if(!$have_topic_saved) {
-		tutor_load_template_from_custom_path(
-			tutor()->path . '/views/modal/required_popup.php',
-			array(
-				"course_id"=>$course_id
-			),
-			true
-		);
- }
+var_dump($have_topic_saved);
+if(!$have_topic_saved) {
+	tutor_load_template_from_custom_path(
+		tutor()->path . '/views/modal/required_popup.php',
+		array(
+			"course_id"=>$course_id
+		),
+		true
+	);
+}
 get_tutor_footer();
